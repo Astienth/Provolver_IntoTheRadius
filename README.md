@@ -15,6 +15,8 @@ You should have these files in the directory :
 Launch the <b>IntoTheRadius_Protube.bat</b> from the game folder.
 It will launch the Protube application AND the game.
 
+<b> ⚠️  If the application asks for network access, authorize it. The app communicates locally with the game via network ⚠️ </b>
+
 <img src="https://i.ibb.co/d0BzdD0/Capture.jpg" alt="Capture" border="0">
 
 Turn you provolver on.
