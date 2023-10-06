@@ -43,7 +43,10 @@ namespace Provolver_IntoTheRadius
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             this.btnStart.Enabled = true;
-            this.engine.serverStop = true;
+            if (this.engine != null)
+            {
+                this.engine.serverStop = true;
+            }
             this.WriteTextSafe("Stopping...");
         }
 
@@ -52,6 +55,8 @@ namespace Provolver_IntoTheRadius
             if (disposing && this.components != null)
                 this.components.Dispose();
             base.Dispose(disposing);
+            Application.ExitThread();
+            Environment.Exit(Environment.ExitCode);
         }
 
         private void InitializeComponent()

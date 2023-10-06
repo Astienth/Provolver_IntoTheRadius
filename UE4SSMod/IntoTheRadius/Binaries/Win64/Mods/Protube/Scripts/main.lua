@@ -9,9 +9,6 @@ values :
 ]]--
 
 local udpClient
-local health = 100
-local hand = "R"
-local loopStarted = false
 
 function CreateUDPClient()
 	local socket = require("socket")
@@ -25,78 +22,53 @@ function CreateUDPClient()
 end
 
 function RegisterHooks()
-	--[[ Receive Damage ]]--
-	RegisterHook("/Game/Blueprints/Player/AE_PlayerCharacter.AE_PlayerCharacter_C:ReceiveAnyDamage", function()
-	    assert(udpClient:send("Impact"))
-	end)
-	--[[ Death ]]--
-	RegisterHook("/Game/Blueprints/Player/AE_PlayerCharacter.AE_PlayerCharacter_C:Death", function()
-	    assert(udpClient:send("Death"))
-	end)
-	--[[ Weapon in left hand ]]--
-	RegisterHook("/Game/VR/Weapons/VRWeapon.VRWeapon_C:InpActEvt_GripLeft_K2Node_InputActionEvent_2", function()
-	    hand = "L"
-	end)
-	--[[ Weapon in right hand ]]--
-	RegisterHook("/Game/VR/Weapons/VRWeapon.VRWeapon_C:InpActEvt_GripRight_K2Node_InputActionEvent_0", function()
-	    hand = "R"
-	end)
-	--[[ Weapon Attack ]]--
-	RegisterHook("/Game/VR/Weapons/VRWeapon.VRWeapon_C:PlayHapticForWeapon", function(Context)
-	    assert(udpClient:send("RecoilVest_" .. hand))
-	    assert(udpClient:send("RecoilArm_" .. hand))
-	end)
-	--[[ Weapon Shoot ]]--
-	--[[
-	RegisterHook("/Game/Blueprints/Weapon/BP_WeaponBase.BP_WeaponBase_C:EventWeapon_Attack", function(Context)
-	    assert(udpClient:send("RecoilVest_" .. hand))
-	    assert(udpClient:send("RecoilArm_" .. hand))
-	end)
-	]]--
-	--[[ SoulModeEnabled ]]--
-	RegisterHook("/Game/Blueprints/Weapon/BP_WeaponBase.BP_WeaponBase_C:SoulModeEnabled_Event_0", function()
-	    assert(udpClient:send("Superpower_L"))
-	    assert(udpClient:send("Superpower_R"))
-	    assert(udpClient:send("Superpower"))
-	end)
-	--[[ SoulModeEnded ]]--
-	RegisterHook("/Game/Blueprints/Weapon/BP_WeaponBase.BP_WeaponBase_C:SoulModeEnded", function()
-	    assert(udpClient:send("SingularityFast"))
-	end)
-	--[[ LandAfterJump ]]--
-	RegisterHook("/Game/Blueprints/Player/AE_PlayerCharacter.AE_PlayerCharacter_C:OnLanded", function()
-	    assert(udpClient:send("LandAfterJump"))
-	end)
-	--[[ On jump ]]--
-	RegisterHook("/Game/Blueprints/Player/AE_PlayerCharacter.AE_PlayerCharacter_C:InpActEvt_Jump_K2Node_InputActionEvent_29", function()
-	    assert(udpClient:send("OnJump"))
-	end)
-	--[[ Healing ]]--
-	RegisterHook("/Game/Blueprints/Player/AE_PlayerCharacter.AE_PlayerCharacter_C:ModifyHealth", function(Context)
-	    newHealth = Context:get().PlayerHealth
-	    if newHealth > health then
-	    	assert(udpClient:send("Heal"))
-	    end
-	    health = newHealth		
-		--[[ Low Health ]]--
-		if not loopStarted then
-			LoopAsync(1000, checkHealth)
-			loopStarted = true
-		end
+
+	--[[ BP_FirearmItem OnBulletFired ]]--
+	RegisterHook("/Game/ITR/BPs/Items/Weapons/BP_FirearmItem.BP_FirearmItem_C:OnBulletFired", function(Context)
+		currWeaponClass = Context:get():GetClass():GetFullName()
+		handleWeaponClass(currWeaponClass)	
 	end)
 end
 
-function checkHealth()
-	if health <= 0 then
-		loopStarted = false
-		return true
+function handleWeaponClass(currWeaponClass)	
+	weaponName = split(currWeaponClass, "/")
+	--print(weaponName[8])
+	if weaponName[7] == "Secondary" then
+		assert(udpClient:send("kick,255,0,0"))
+		return
 	end
-	if health < 20 then
-		assert(udpClient:send("HeartBeat"))
-		return false
+	assert(udpClient:send(createStringMessageFromWeaponType(weaponName[8])))
+end
+
+function split(str, sep)
+	assert(type(str) == 'string' and type(sep) == 'string', 'The arguments must be <string>')
+	if sep == '' then return {str} end
+	
+	local res, from = {}, 1
+	repeat
+	  local pos = str:find(sep, from)
+	  res[#res + 1] = str:sub(from, pos and pos - 1)
+	  from = pos and pos + #sep
+	until not from
+	return res
+end
+
+function createStringMessageFromWeaponType(weapon)
+	--method,kickpower,rumblepower,rumbleDuration
+	if weapon == "Shotgun" then
+		return "shoot,255,255,100"
 	end
-	loopStarted = false
-	return true
+	if weapon == "IZ81" then
+		return "shoot,255,255,100"
+	end
+	if weapon == "Saiga" then
+		return "shoot,255,255,100"
+	end
+	if weapon == "SPAS" then
+		return "shoot,255,255,100"
+	end
+	-- this is default rifle and submachine
+	return "shoot,210,125,40"
 end
 
 function checkPlayerSpawned()
@@ -106,4 +78,4 @@ function checkPlayerSpawned()
 end
 
 CreateUDPClient()
---checkPlayerSpawned()
+checkPlayerSpawned()

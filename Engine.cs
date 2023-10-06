@@ -39,7 +39,7 @@ namespace Provolver_IntoTheRadius
             IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
             EndPoint Remote = (EndPoint)(sender);
 
-            while (true)
+            while (!serverStop)
             {
                 data = new byte[1024];
                 recv = newsock.ReceiveFrom(data, ref Remote);
