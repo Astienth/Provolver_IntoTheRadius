@@ -1,15 +1,23 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using System.Net.Sockets;
+using System.Net;
+using System.Text;
+using System;
 
 namespace Provolver_IntoTheRadius
 {
     public class Engine
     {
+        public bool serverStop = false;
+        public Action<string> UpdateProgress;
+
         public void initEngine()
         {
             this.initSyncAsync();
-            this.createUDPListener();
+            Thread Udp = new Thread(() => this.createUDPListener());
+            Udp.Start();
         }
         public async Task initSyncAsync()
         {
@@ -19,36 +27,59 @@ namespace Provolver_IntoTheRadius
 
         public void createUDPListener()
         {
+            int recv;
+            byte[] data = new byte[1024];
+            IPEndPoint ipep = new IPEndPoint(IPAddress.Loopback, 5005);
 
+            Socket newsock = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+
+            newsock.Bind(ipep);
+            this.UpdateProgress("Ready, waiting for game events");
+
+            IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
+            EndPoint Remote = (EndPoint)(sender);
+
+            while (true)
+            {
+                data = new byte[1024];
+                recv = newsock.ReceiveFrom(data, ref Remote);
+
+                this.UpdateProgress("Message received from " + Remote.ToString());
+                string message = Encoding.ASCII.GetString(data, 0, recv);
+                this.UpdateProgress(message);
+                this.HandleMessage(message);
+            }
         }
     
-        public void PlayerShoot(string weapon)
+        public void HandleMessage(string message)
         {
-          switch (weapon)
-          {
-            case "hlvr_weapon_energygun":
-                ForceTubeVRInterface.Kick(210, ForceTubeVRChannel.all);
-                break;
-            case "hlvr_weapon_rapidfire":
-                ForceTubeVRInterface.Kick(255, ForceTubeVRChannel.all);
-                break;
-            case "hlvr_weapon_shotgun":
-                ForceTubeVRInterface.Shoot(210, 255, 65f, ForceTubeVRChannel.all);
-                break;
-            default:
-                ForceTubeVRInterface.Kick(210, ForceTubeVRChannel.all);
-                break;
-          }
-        }
+            // parse message
+            String[] messageParams = message.Split(',');
 
-        public void ClipInserted()
-        {
-            ForceTubeVRInterface.Rumble(85, 20f, ForceTubeVRChannel.all);
-        }
-
-        public void ChamberedRound()
-        {
-            ForceTubeVRInterface.Rumble(85, 20f, ForceTubeVRChannel.all);
+            switch (messageParams[0])
+            {
+                case "kick":
+                    ForceTubeVRInterface.Kick((byte)Convert.ToInt32(messageParams[1]), ForceTubeVRChannel.all);
+                    break;
+                case "rumble":
+                    ForceTubeVRInterface.Rumble(
+                        (byte)Convert.ToInt32(messageParams[2]),
+                        (float)Convert.ToDouble(messageParams[3]), 
+                        ForceTubeVRChannel.all
+                    );
+                    break;
+                case "shoot":
+                    ForceTubeVRInterface.Shoot(
+                        (byte)Convert.ToInt32(messageParams[1]),
+                        (byte)Convert.ToInt32(messageParams[2]),
+                        (float)Convert.ToDouble(messageParams[3]),
+                        ForceTubeVRChannel.all
+                    );
+                    break;
+                default:
+                    ForceTubeVRInterface.Kick((byte)Convert.ToInt32(messageParams[1]), ForceTubeVRChannel.all);
+                    break;
+            }
         }
     }
 }

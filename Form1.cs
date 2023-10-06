@@ -23,7 +23,7 @@ namespace Provolver_IntoTheRadius
 
         public Form1() => this.InitializeComponent();
 
-        private void WriteTextSafe(string text)
+        public void WriteTextSafe(string text)
         {
             if (this.lblInfo.InvokeRequired)
                 this.lblInfo.Invoke((Delegate)new Form1.SafeCallDelegate(this.WriteTextSafe), (object)text);
@@ -35,6 +35,7 @@ namespace Provolver_IntoTheRadius
         {
             this.btnStart.Enabled = false;
             this.engine = new Engine();
+            this.engine.UpdateProgress += this.WriteTextSafe;
             this.engine.initEngine();
             this.WriteTextSafe("Initializing Provolver and starting...");
         }
@@ -42,6 +43,7 @@ namespace Provolver_IntoTheRadius
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             this.btnStart.Enabled = true;
+            this.engine.serverStop = true;
             this.WriteTextSafe("Stopping...");
         }
 

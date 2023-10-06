@@ -106,4 +106,4 @@ function checkPlayerSpawned()
 end
 
 CreateUDPClient()
-checkPlayerSpawned()
+--checkPlayerSpawned()
