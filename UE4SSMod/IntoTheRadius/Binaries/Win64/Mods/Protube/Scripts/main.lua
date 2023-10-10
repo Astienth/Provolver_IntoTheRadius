@@ -9,6 +9,7 @@ values :
 ]]--
 
 local udpClient
+local hookIds = {}
 
 function CreateUDPClient()
 	local socket = require("socket")
@@ -22,12 +23,18 @@ function CreateUDPClient()
 end
 
 function RegisterHooks()
+	-- force unregister all hooks
+	for k,v in pairs(hookIds) do
+		UnregisterHook("/Game/ITR/BPs/Items/Weapons/BP_FirearmItem.BP_FirearmItem_C:OnBulletFired", k, v)
+	end
+	hookIds = {}
 
 	--[[ BP_FirearmItem OnBulletFired ]]--
-	RegisterHook("/Game/ITR/BPs/Items/Weapons/BP_FirearmItem.BP_FirearmItem_C:OnBulletFired", function(Context)
+	local hook1, hook2 = RegisterHook("/Game/ITR/BPs/Items/Weapons/BP_FirearmItem.BP_FirearmItem_C:OnBulletFired", function(Context)
 		currWeaponClass = Context:get():GetClass():GetFullName()
 		handleWeaponClass(currWeaponClass)	
 	end)
+	hookIds[hook1] = hook2
 end
 
 function handleWeaponClass(currWeaponClass)	
