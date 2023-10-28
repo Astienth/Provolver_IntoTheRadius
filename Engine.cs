@@ -15,9 +15,15 @@ namespace Provolver_IntoTheRadius
 
         public void initEngine()
         {
-            this.initSyncAsync();
-            Thread Udp = new Thread(() => this.createUDPListener());
-            Udp.Start();
+            try
+            {
+                this.initSyncAsync();
+                Thread Udp = new Thread(() => this.createUDPListener());
+                Udp.Start();
+            } catch (Exception ex)
+            {
+                this.UpdateProgress(ex.Message);
+            }
         }
         public async Task initSyncAsync()
         {
@@ -27,27 +33,33 @@ namespace Provolver_IntoTheRadius
 
         public void createUDPListener()
         {
-            int recv;
-            byte[] data = new byte[1024];
-            IPEndPoint ipep = new IPEndPoint(IPAddress.Loopback, 5005);
-
-            Socket newsock = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-
-            newsock.Bind(ipep);
-            this.UpdateProgress("Ready, waiting for game events");
-
-            IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
-            EndPoint Remote = (EndPoint)(sender);
-
-            while (!serverStop)
+            try
             {
-                data = new byte[1024];
-                recv = newsock.ReceiveFrom(data, ref Remote);
+                int recv;
+                byte[] data = new byte[1024];
+                IPEndPoint ipep = new IPEndPoint(IPAddress.Loopback, 5020);
 
-                this.UpdateProgress("Message received from " + Remote.ToString());
-                string message = Encoding.ASCII.GetString(data, 0, recv);
-                this.UpdateProgress(message);
-                this.HandleMessage(message);
+                Socket newsock = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+
+                newsock.Bind(ipep);
+                this.UpdateProgress("Ready, waiting for game events");
+
+                IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
+                EndPoint Remote = (EndPoint)(sender);
+
+                while (!serverStop)
+                {
+                    data = new byte[1024];
+                    recv = newsock.ReceiveFrom(data, ref Remote);
+
+                    this.UpdateProgress("Message received from " + Remote.ToString());
+                    string message = Encoding.ASCII.GetString(data, 0, recv);
+                    this.UpdateProgress(message);
+                    this.HandleMessage(message);
+                }
+            } catch (Exception ex)
+            {
+                this.UpdateProgress(ex.Message);
             }
         }
     

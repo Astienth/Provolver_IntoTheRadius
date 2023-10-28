@@ -14,7 +14,7 @@ local hookIds = {}
 function CreateUDPClient()
 	local socket = require("socket")
 	-- the address and port of the server
-	local address, port = "127.0.0.1", 5005
+	local address, port = "127.0.0.1", 5020
 	udpClient = assert(socket.udp())
 	udpClient:settimeout(1)
 	assert(udpClient:setsockname("*",5005))
