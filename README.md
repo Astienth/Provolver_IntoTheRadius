@@ -5,6 +5,8 @@
 ## SUMMARY
 Provolver integration mod for Into the radius. Many different haptic effects for each weapons.
 
+☕ If you wanna show some support you can buy me a coffee : https://www.buymeacoffee.com/astienth4
+
 ## INSTALLATION
 Extract the contents of the [Provolver.zip](https://github.com/Astienth/Provolver_IntoTheRadius/releases/download/1.0/IntoTheRadius_Protube.zip) file inside your game root directory, the one containing IntoTheRadius.exe
 You should have these files in the directory :
