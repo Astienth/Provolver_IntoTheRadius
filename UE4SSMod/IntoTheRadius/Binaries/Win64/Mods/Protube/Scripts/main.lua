@@ -17,7 +17,7 @@ function CreateUDPClient()
 	local address, port = "127.0.0.1", 5020
 	udpClient = assert(socket.udp())
 	udpClient:settimeout(1)
-	assert(udpClient:setsockname("*",5005))
+	assert(udpClient:setsockname("*",5020))
 	assert(udpClient:setpeername(address, port))
 	assert(udpClient:send("shoot,210,210,50"))
 end
